@@ -8,8 +8,15 @@
 ## Quick Start
 
 ```bash
-# With Go 1.21 installed:
+# Requirements:
+# 1. Go 1.21 or later: https://go.dev/dl/
+# 2. TDM-GCC 64-bit (Windows only): https://jmeubank.github.io/tdm-gcc/
+
+# Setup
+go mod tidy
+go mod vendor
 set CGO_ENABLED=1 && go run .
+
 # Visit http://localhost:8080
 ```
 
