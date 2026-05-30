@@ -2,15 +2,13 @@ package main
 
 import "net/http"
 
-// =============================================================================
-// ADDITIONAL SECURITY FEATURE 1 – SECURITY RESPONSE HEADERS
+// additional feature 1: SECURITY RESPONSE HEADERS
 //
 // A middleware that applies defensive HTTP headers to every response:
-//   - Content-Security-Policy:  restricts resource origins to prevent XSS
-//   - X-Frame-Options:          prevents clickjacking via iframes
-//   - X-Content-Type-Options:   prevents MIME-sniffing attacks
-//   - Referrer-Policy:          limits referrer information leakage
-// =============================================================================
+// - Content-Security-Policy: restricts resource origins to prevent XSS
+// - X-Frame-Options: prevents clickjacking via iframes
+// - X-Content-Type-Options: prevents MIME-sniffing attacks
+// - Referrer-Policy: limits referrer information leakage
 
 func securityHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
