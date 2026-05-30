@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Records – Admin | SRMS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f4f1ec; color: #222; }
+
+        header {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header .site-title { font-family: Georgia, serif; font-size: 1.1rem; }
+        header .user-info { font-size: 0.85rem; color: #ccc; }
+
+        .logout-form { display: inline; }
+        .btn-logout {
+            background: none;
+            border: 1px solid #aaa;
+            color: #ddd;
+            padding: 0.3rem 0.8rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+        .btn-logout:hover { background: #2e2e5e; }
+
+        main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+
+        .page-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 1.4rem;
+        }
+        h2 { font-family: Georgia, serif; font-size: 1.4rem; color: #1a1a2e; }
+        .badge {
+            background: #1a1a2e;
+            color: #fff;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 2px;
+            letter-spacing: 0.05em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid #ccc;
+            font-size: 0.92rem;
+        }
+        thead {
+            background: #1a1a2e;
+            color: #fff;
+        }
+        thead th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-weight: bold;
+        }
+        tbody tr:hover { background: #f9f7f3; }
+        tbody td { padding: 0.7rem 1rem; }
+
+        .btn-view {
+            background: #1a1a2e;
+            color: #fff;
+            border: none;
+            padding: 0.35rem 0.9rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-family: Arial, sans-serif;
+        }
+        .btn-view:hover { background: #2e2e5e; }
+
+        .empty-state {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 2rem;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="site-title">York City Medical Centre – Admin Console</span>
+    <span class="user-info">
+        Administrator: <strong>{{.User.Username}}</strong>
+        <form class="logout-form" method="POST" action="/logout">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <button class="btn-logout" type="submit">Sign Out</button>
+        </form>
+    </span>
+</header>
+
+<main>
+    <h2 class="page-header">Patient Records</h2>
+
+    {{if .Records}}
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Full Name</th>
+                <th>Date of Birth</th>
+                <th>Blood Type</th>
+                <th>Username</th>
+                <th>Last Updated By</th>
+                <th>Last Updated At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{range .Records}}
+            <tr>
+                <td>{{.ID}}</td>
+                <!-- All values rendered via Go's html/template which auto-escapes
+                     output, preventing cross-site scripting (XSS) attacks. -->
+                <td><strong>{{.FullName}}</strong></td>
+                <td>{{.DateOfBirth}}</td>
+                <td>{{.BloodType}}</td>
+                <td>{{.Username}}</td>
+                <td>{{.LastUpdatedBy}}</td>
+                <td>{{.LastUpdatedAt}}</td>
+                <td>
+                    <a class="btn-view" href="/admin/record/{{.ID}}">View / Edit</a>
+                </td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <div class="empty-state">No patient records found.</div>
+    {{end}}
+</main>
+</body>
+</html>

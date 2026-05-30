@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRMS Login</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #f4f1ec;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 2.5rem 3rem;
+            width: 100%;
+            max-width: 420px;
+        }
+        .org-name {
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: #1a1a2e;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.6rem;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            color: #333;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.55rem 0.7rem;
+            border: 1px solid #bbb;
+            margin-bottom: 1.1rem;
+        }
+        input:focus { outline: 2px solid #1a1a2e; }
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.7rem;
+            background: #1a1a2e;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.05em;
+        }
+        button[type="submit"]:hover { background: #2e2e5e; }
+        .error {
+            padding: 0.7rem 1rem;
+            margin-bottom: 1.2rem;
+            color: #7b241c;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <p class="org-name">York City Medical Centre</p>
+    <h1>Secure Records System</h1>
+
+    {{if .Error}}
+    <div class="error" role="alert">{{.Error}}</div>
+    {{end}}
+
+    <form method="POST" action="/login" autocomplete="off">
+        <label for="username">Username</label>
+        <input type="text"
+               id="username"
+               name="username"
+               maxlength="50"
+               required
+               autocomplete="username">
+
+        <label for="password">Password</label>
+        <input type="password"
+               id="password"
+               name="password"
+               maxlength="128"
+               required
+               autocomplete="current-password">
+
+        <button type="submit">Sign In</button>
+    </form>
+
+</div>
+</body>
+</html>

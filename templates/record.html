@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal medical records</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f4f1ec; color: #222; }
+
+        header {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header .site-title { font-family: Georgia, serif; font-size: 1.1rem; }
+        header .user-info { font-size: 0.85rem; color: #ccc; }
+
+        .logout-form { display: inline; }
+        .btn-logout {
+            background: none;
+            border: 1px solid #aaa;
+            color: #ddd;
+            padding: 0.3rem 0.8rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+        .btn-logout:hover { background: #2e2e5e; }
+
+        main { max-width: 820px; margin: 2rem auto; padding: 0 1rem; }
+
+        h2 { font-family: Georgia, serif; font-size: 1.4rem; color: #1a1a2e; margin-bottom: 1.2rem; }
+
+        .flash {
+            padding: 0.7rem 1rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.9rem;
+            color: green;
+        }
+        .error {
+            padding: 0.7rem 1rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.9rem;
+            color: red;
+        }
+
+        .record-card {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 1.8rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .record-card h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding-bottom: 0.4rem;
+            margin-bottom: 1rem;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem 2rem;
+        }
+        .field { margin-bottom: 0.4rem; }
+        .field-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #777;
+            display: block;
+        }
+        .field-value {
+            font-size: 0.97rem;
+            color: #1a1a2e;
+            word-break: break-word;
+        }
+        .full-width { grid-column: 1 / -1; }
+
+        .audit-bar {
+            background: white;
+            border: 1px solid #e0ddd6;
+            padding: 0.5rem 1rem;
+            font-size: 0.78rem;
+            margin-top: 0.5rem;
+        }
+
+        .edit-card {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 1.8rem 2rem;
+        }
+        .edit-card h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding-bottom: 0.4rem;
+            margin-bottom: 1rem;
+        }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.3rem; color: #333; }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 0.5rem 0.7rem;
+            border: 1px solid #bbb;
+            font-size: 0.97rem;
+            font-family: Arial, sans-serif;
+        }
+        input:focus, textarea:focus { outline: 2px solid #1a1a2e; }
+        textarea { resize: vertical; min-height: 70px; }
+        .hint { font-size: 0.78rem; color: #888; margin-top: 0.2rem; }
+        .btn-save {
+            background: #1a1a2e;
+            color: #fff;
+            border: none;
+            padding: 0.65rem 1.8rem;
+            font-size: 0.95rem;
+        }
+        .btn-save:hover { background: #2e2e5e; }
+
+        .readonly-note {
+            background: white;
+            border: 1px solid #e0ddd6;
+            padding: 0.6rem 1rem;
+            font-size: 0.82rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="site-title">York City Medical Centre – Patient</span>
+    <span class="user-info">
+        Signed in as: <strong>{{.User.Username}}</strong>
+        <form class="logout-form" method="POST" action="/logout">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <button class="btn-logout" type="submit">Sign Out</button>
+        </form>
+    </span>
+</header>
+
+<main>
+    <h2>Personal Medical Record</h2>
+
+    {{if .Flash}}
+    <div class="flash" role="status">{{.Flash}}</div>
+    {{end}}
+    {{if .Error}}
+    <div class="error" role="alert">{{.Error}}</div>
+    {{end}}
+
+    <!-- Record view -->
+    <div class="record-card">
+        <h3>Patient Information</h3>
+
+        <div class="field-grid">
+            <div class="field">
+                <span class="field-label">Full Name</span>
+                <span class="field-value">{{.Record.FullName}}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Date of Birth</span>
+                <span class="field-value">{{.Record.DateOfBirth}}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Blood Type</span>
+                <span class="field-value">{{.Record.BloodType}}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Registered GP</span>
+                <span class="field-value">{{.Record.GPName}}</span>
+            </div>
+            <div class="field full-width">
+                <span class="field-label">Known Allergies</span>
+                <span class="field-value">{{.Record.Allergies}}</span>
+            </div>
+            <div class="field full-width">
+                <span class="field-label">Current Medications</span>
+                <span class="field-value">{{.Record.Medications}}</span>
+            </div>
+            <div class="field full-width">
+                <span class="field-label">Clinical Notes</span>
+                <span class="field-value">{{.Record.Notes}}</span>
+            </div>
+        </div>
+
+        <div class="audit-bar">
+            Last updated by <strong>{{.Record.LastUpdatedBy}}</strong> on {{.Record.LastUpdatedAt}}
+        </div>
+    </div>
+
+    <!-- Edit form -->
+    <div class="edit-card">
+        <h3>Update Contact Details</h3>
+
+        <div class="readonly-note">
+            You may update your phone number and emergency contact below.
+            All other fields can only be amended by an administrator.
+        </div>
+
+        <!-- CSRF token included in forms -->
+        <form method="POST" action="/record/update">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="text"
+                       id="phone"
+                       name="phone"
+                       value="{{.Record.Phone}}"
+                       maxlength="25"
+                       placeholder="e.g. 07700 900001">
+                <p class="hint">Digits, spaces, +, -, ( ) only. Max 25 characters.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="emergency_contact">Emergency Contact</label>
+                <textarea id="emergency_contact"
+                          name="emergency_contact"
+                          maxlength="200">{{.Record.EmergencyContact}}</textarea>
+                <p class="hint">Name and phone number. Max 200 characters.</p>
+            </div>
+
+            <button class="btn-save" type="submit">Save Changes</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>
