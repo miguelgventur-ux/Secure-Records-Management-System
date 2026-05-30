@@ -16,7 +16,7 @@
 git clone https://github.com/miguelgventur-ux/Secure-Records-Management-System.git
 
 # 2. Navigate into the project directory in your system
-cd srms
+cd Secure-Records-Management-System
 
 # 4. Generate go.sum and vendor folder
 go mod tidy
