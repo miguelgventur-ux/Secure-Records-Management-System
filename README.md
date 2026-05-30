@@ -8,10 +8,8 @@
 ## Quick Start
 
 ```bash
-# With Go installed and CGO enabled:
-go mod download      # or: go build -mod=vendor
-go build -o srms .
-./srms
+# With Go 1.21 installed:
+set CGO_ENABLED=1 && go run .
 # Visit http://localhost:8080
 ```
 
@@ -42,10 +40,10 @@ go build -o srms .
 
 ### Additional Feature 1 – Security Response Headers
 Every HTTP response carries:
-- **Content-Security-Policy**: `default-src 'self'` — blocks inline scripts, external resources, and object embeds
-- **X-Frame-Options: DENY** — prevents clickjacking via iframe embedding  
-- **X-Content-Type-Options: nosniff** — stops MIME-type sniffing attacks  
-- **Referrer-Policy: strict-origin-when-cross-origin** — limits referrer leakage to third parties
+- **Content-Security-Policy**: `default-src 'self'` blocks inline scripts, external resources, and object embeds
+- **X-Frame-Options: DENY** prevents clickjacking via iframe embedding  
+- **X-Content-Type-Options: nosniff** stops MIME-type sniffing attacks  
+- **Referrer-Policy: strict-origin-when-cross-origin** limits referrer leakage to third parties
 
 Applied via a `securityHeadersMiddleware` that wraps the entire router.
 
@@ -61,13 +59,19 @@ Applied via a `securityHeadersMiddleware` that wraps the entire router.
 
 ```
 srms/
-├── main.go              # All backend logic: handlers, DB, sessions, security
+├── main.go
+├── database.go
+├── handlers.go
+├── middleware.go
+├── models.go
+├── session.go
+├── validation.go
 ├── go.mod
 ├── go.sum
-├── vendor/              # Vendored dependencies (golang.org/x/crypto, mattn/go-sqlite3)
+├── vendor/ # Vendored dependencies (golang.org/x/crypto, mattn/go-sqlite3)
 └── templates/
-    ├── login.html       # Login form
-    ├── record.html      # Patient self-service view/edit page
-    ├── admin_records.html  # Admin: list all records
-    └── admin_record.html   # Admin: full record view and edit
+    ├── login.html # Login css
+    ├── record.html # Patient css
+    ├── admin_records.html # Admin: list all records css
+    └── admin_record.html # Admin: full record view and edit css
 ```
