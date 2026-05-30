@@ -7,9 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// =============================================================================
-// DATABASE INITIALISATION
-// =============================================================================
+// initialise database
 
 func initDB() {
 	var err error
@@ -67,7 +65,7 @@ func initDB() {
 }
 
 // seedData populates the database with one admin and three sample patients if
-// the database is empty.  Passwords are bcrypt-hashed before storage.
+// the database is empty and passwords are bcrypt-hashed before storage
 func seedData() {
 	var count int
 	db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
@@ -83,13 +81,13 @@ func seedData() {
 		return string(h)
 	}
 
-	// Admin account
+	// admin account
 	db.Exec(`INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'admin')`,
 		"admin", mkHash("Admin@1234"))
 	db.Exec(`INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'admin')`,
 		"admin2", mkHash("Admin@5678"))
 
-	// Patient accounts and their records
+	// patient accounts and their records
 	patients := []struct {
 		username, password, name, dob, blood, allerg, meds, phone, ec, gp, notes string
 	}{
