@@ -8,16 +8,25 @@
 ## Quick Start
 
 ```bash
-# Requirements:
+# Requirements
 # 1. Go 1.21 or later: https://go.dev/dl/
 # 2. TDM-GCC 64-bit (Windows only): https://jmeubank.github.io/tdm-gcc/
 
-# Setup
+# 1. Download the project from GitHub as a ZIP and extract it or clone it:
+git clone https://github.com/miguelgventur-ux/srms.git
+
+# 2. Navigate into the project directory in your system
+cd srms
+
+# 4. Generate go.sum and vendor folder
 go mod tidy
 go mod vendor
+
+# 5. Run the application
 set CGO_ENABLED=1 && go run .
 
-# Visit http://localhost:8080
+# 6. Visit
+http://localhost:8080
 ```
 
 ### Seed Credentials
