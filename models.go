@@ -2,14 +2,14 @@ package main
 
 import "time"
 
-// User represents an authenticated account in the system.
+// user represents an authenticated account in the system
 type User struct {
 	ID       int
 	Username string
 	Role     string // "user" or "admin"
 }
 
-// Session holds the active session for a logged-in user.
+// session holds the active session for a logged-in user
 type Session struct {
 	Token     string
 	UserID    int
@@ -17,8 +17,7 @@ type Session struct {
 	ExpiresAt time.Time
 }
 
-// MedicalRecord holds a patient's sensitive health data.
-// last_updated_by and last_updated_at fulfil the auditability requirement.
+// edicalRecord holds a patient's sensitive health data last_updated_by and last_updated_at fulfil the auditability requirement
 type MedicalRecord struct {
 	ID               int
 	UserID           int
