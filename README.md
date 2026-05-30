@@ -13,7 +13,7 @@
 # 2. TDM-GCC 64-bit (Windows only): https://jmeubank.github.io/tdm-gcc/
 
 # 1. Download the project from GitHub as a ZIP and extract it or clone it:
-git clone https://github.com/miguelgventur-ux/srms.git
+git clone https://github.com/miguelgventur-ux/Secure-Records-Management-System.git
 
 # 2. Navigate into the project directory in your system
 cd srms
