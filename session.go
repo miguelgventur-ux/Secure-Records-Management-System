@@ -8,11 +8,9 @@ import (
 	"time"
 )
 
-// =============================================================================
-// SESSION MANAGEMENT
-// =============================================================================
+// session managment
 
-// generateToken produces a cryptographically random 256-bit URL-safe token.
+// generateToken produces a cryptographically random 256-bit URL-safe token
 func generateToken() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
@@ -22,7 +20,7 @@ func generateToken() (string, error) {
 }
 
 // createSession inserts a new session row and returns the Session struct.
-// Each session carries its own per-session CSRF token.
+// Each session carries its own per-session CSRF token
 func createSession(userID int) (*Session, error) {
 	token, err := generateToken()
 	if err != nil {
@@ -34,7 +32,7 @@ func createSession(userID int) (*Session, error) {
 	}
 	expires := time.Now().Add(2 * time.Hour)
 
-	// Prepared statement – SQL injection protection.
+	// prepared statement for SQL injection protection
 	_, err = db.Exec(
 		`INSERT INTO sessions (token, user_id, csrf_token, expires_at) VALUES (?, ?, ?, ?)`,
 		token, userID, csrfToken, expires)
@@ -45,7 +43,7 @@ func createSession(userID int) (*Session, error) {
 }
 
 // getSession reads the session cookie and returns the Session and User if valid.
-// Returns nil, nil, nil when the user is not authenticated.
+// Returns nil, nil, nil when the user is not authenticated
 func getSession(r *http.Request) (*Session, *User, error) {
 	cookie, err := r.Cookie("session")
 	if err != nil {
@@ -77,8 +75,7 @@ func deleteSession(token string) {
 	db.Exec("DELETE FROM sessions WHERE token = ?", token)
 }
 
-// setSessionCookie writes the session cookie with HttpOnly and SameSite=Strict
-// flags to prevent JavaScript access and CSRF from cross-site requests.
+// setSessionCookie writes the session cookie with HttpOnly and SameSite=Strict flags to prevent JavaScript access and CSRF from cross-site requests
 func setSessionCookie(w http.ResponseWriter, token string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session",
