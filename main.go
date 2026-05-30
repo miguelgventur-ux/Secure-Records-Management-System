@@ -1,6 +1,6 @@
 // Secure Records Management System (SRMS)
 // Organisation: York City Medical Centre
-// Domain:       Patient Medical Records
+// Domain: Patient Medical Records
 
 package main
 
@@ -23,17 +23,16 @@ var db *sql.DB
 var tmpl *template.Template
 
 // Additional security feature 2 – Account lock out (Brute-Force Protection)
-//
-// After 5 consecutive failed login attempts the account is locked for
-// 15 minutes.  The counters are stored in the users table so they survive
-// server restarts and are enforced regardless of client identity.
+
+// after 5 consecutive failed login attempts the account is locked for 15 minutes.
+// the counters are stored in the users table so they survive server restarts and are enforced regardless of client identity
 
 const (
 	maxFailedAttempts = 5
 	lockoutDuration   = 15 * time.Minute
 )
 
-// isLockedOut returns true and a user facing message if the account is locked.
+// isLockedOut returns true and a user facing message if the account is locked
 func isLockedOut(username string) (bool, string) {
 	var failed int
 	var lockedUntil sql.NullTime
@@ -54,8 +53,7 @@ func isLockedOut(username string) (bool, string) {
 	return false, ""
 }
 
-// recordFailedAttempt increments the failure counter and sets the lockout
-// timestamp once the threshold is reached.
+// recordFailedAttempt increments the failure counter and sets the lockout timestamp once the threshold is reached
 func recordFailedAttempt(username string) {
 	db.Exec(`UPDATE users SET
 		failed_attempts = failed_attempts + 1,
@@ -67,16 +65,15 @@ func recordFailedAttempt(username string) {
 		WHERE username = ?`, maxFailedAttempts, username)
 }
 
-// resetFailedAttempts clears the lockout state on successful login.
+// resetFailedAttempts clears the lockout state on successful login
 func resetFailedAttempts(username string) {
 	db.Exec("UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE username = ?", username)
 }
 
-// INPUT VALIDATION
-//
-// All user-supplied values are validated for length and basic format before
-// being processed or stored.  This prevents malformed data and reduces the
-// attack surface for injection-style abuse.
+// input validation
+
+// all user-supplied values are validated for length and basic format before being processed or stored.
+// this prevents malformed data and reduces the attack surface for injection-style abuse
 
 var (
 	phoneRegex    = regexp.MustCompile(`^[0-9\s\+\-\(\)]{7,25}$`)
@@ -92,7 +89,7 @@ func (ve *validationErrors) check(cond bool, msg string) {
 	}
 }
 
-// handleRoot redirects to the appropriate dashboard based on role.
+// handleRoot redirects to the appropriate dashboard based on role
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -111,9 +108,9 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleLogin renders the login form (GET) and authenticates users (POST).
-// Passwords are compared with bcrypt; a constant-time comparison defeats
-// timing-based user-enumeration.  Account lockout is enforced before the
-// database lookup so the response is fast regardless of username validity.
+// passwords are compared with bcrypt and a constant-time comparison defeats
+// timing-based user-enumeration. Account lockout is enforced before the
+// database lookup so the response is fast regardless of username validity
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		tmpl.ExecuteTemplate(w, "login.html", nil)
@@ -127,19 +124,19 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	username := strings.TrimSpace(r.FormValue("username"))
 	password := r.FormValue("password")
 
-	// --- Input validation ---
+	// input validation
 	if !usernameRegex.MatchString(username) || runeLen(password) < 1 || runeLen(password) > 128 {
 		tmpl.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid credentials."})
 		return
 	}
 
-	// --- Account lockout check (ADDITIONAL FEATURE 2) ---
+	// account lockout check (ADDITIONAL FEATURE 2)
 	if locked, msg := isLockedOut(username); locked {
 		tmpl.ExecuteTemplate(w, "login.html", map[string]string{"Error": msg})
 		return
 	}
 
-	// --- Fetch hashed password via prepared statement ---
+	// fetch hashed password via prepared statement
 	var user User
 	var hash string
 	err := db.QueryRow(
@@ -147,8 +144,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		Scan(&user.ID, &user.Username, &hash, &user.Role)
 
 	if err == sql.ErrNoRows {
-		// Perform a dummy bcrypt comparison to normalise timing and prevent
-		// user enumeration through response-time differences.
+		// Perform a dummy bcrypt comparison to normalise timing and prevent user enumeration through response-time differences
 		bcrypt.CompareHashAndPassword([]byte("$2a$10$dummy.hash.to.prevent.timing.leak"), []byte(password))
 		tmpl.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid credentials."})
 		return
@@ -158,7 +154,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// --- Verify password (bcrypt – SECURITY requirement) ---
+	// verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
 		recordFailedAttempt(username) // ADDITIONAL FEATURE 2
 		tmpl.ExecuteTemplate(w, "login.html", map[string]string{"Error": "Invalid credentials."})
@@ -182,7 +178,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleLogout invalidates the server-side session and clears the cookie.
+// handleLogout invalidates the server-side session and clears the cookie
 func handleLogout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -211,14 +207,14 @@ func handleRecord(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	// Regular users only; admins use the admin interface.
+	// regular users only. Admins use the admin interface.
 	if user.Role == "admin" {
 		http.Redirect(w, r, "/admin/records", http.StatusSeeOther)
 		return
 	}
 
 	var rec MedicalRecord
-	// Prepared statement – SQL injection protection.
+	// prepared statement for SQL injection protection.
 	err = db.QueryRow(`
 		SELECT id, user_id, full_name, date_of_birth, blood_type, allergies,
 		       medications, phone, emergency_contact, gp_name, notes,
@@ -245,8 +241,7 @@ func handleRecord(w http.ResponseWriter, r *http.Request) {
 	}))
 }
 
-// handleUpdateRecord processes a user's request to update their own low-risk
-// contact fields: phone and emergency_contact.
+// handleUpdateRecord processes a user's request to update their own low-risk contact fields: phone and emergency_contact
 func handleUpdateRecord(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -262,7 +257,7 @@ func handleUpdateRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// --- CSRF validation ---
+	// CSRF validation
 	if !requireCSRF(w, r, session) {
 		return
 	}
@@ -270,7 +265,7 @@ func handleUpdateRecord(w http.ResponseWriter, r *http.Request) {
 	phone := strings.TrimSpace(r.FormValue("phone"))
 	emergency := strings.TrimSpace(r.FormValue("emergency_contact"))
 
-	// --- Input validation ---
+	// input validation
 	var ve validationErrors
 	ve.check(validatePhone(phone), "Phone number contains invalid characters (digits and spaces only, 7–25 chars).")
 	ve.check(runeLen(emergency) <= 200, "Emergency contact must be 200 characters or fewer.")
@@ -280,7 +275,7 @@ func handleUpdateRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prepared statement – SQL injection protection.
+	// prepared statement for SQL injection protection
 	_, err = db.Exec(`
 		UPDATE medical_records
 		SET    phone = ?, emergency_contact = ?,
@@ -296,7 +291,7 @@ func handleUpdateRecord(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/record?flash="+url.QueryEscape("Contact details updated successfully."), http.StatusSeeOther)
 }
 
-// handleAdminRecords lists all patient records (summary view) for admin users.
+// handleAdminRecords lists all patient records (summary view) for admin users
 func handleAdminRecords(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -312,8 +307,7 @@ func handleAdminRecords(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prepared statement – retrieves summary columns only; sensitive fields
-	// (medications, notes etc.) are fetched individually on the detail page.
+	// Prepared statement to retrieve summary columns only; sensitive fields (medications, notes etc.) are fetched individually on the detail page
 	rows, err := db.Query(`
 		SELECT mr.id, mr.user_id, u.username, mr.full_name, mr.date_of_birth,
 		       mr.blood_type, mr.last_updated_by,
@@ -341,7 +335,7 @@ func handleAdminRecords(w http.ResponseWriter, r *http.Request) {
 	}))
 }
 
-// handleAdminRecord serves GET (view + edit form) and routes POST to the updater.
+// handleAdminRecord serves GET (view + edit form) and routes POST to the updater
 func handleAdminRecord(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -353,7 +347,7 @@ func handleAdminRecord(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// adminViewRecord shows the full patient record and the admin edit form.
+// adminViewRecord shows the full patient record and the admin edit form
 func adminViewRecord(w http.ResponseWriter, r *http.Request) {
 	session, user, err := getSession(r)
 	if err != nil || session == nil {
@@ -372,7 +366,7 @@ func adminViewRecord(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var rec MedicalRecord
-	// Prepared statement – SQL injection protection.
+	// prepared statement for SQL injection protection
 	err = db.QueryRow(`
 		SELECT mr.id, mr.user_id, u.username, mr.full_name, mr.date_of_birth,
 		       mr.blood_type, mr.allergies, mr.medications, mr.phone,
@@ -402,8 +396,8 @@ func adminViewRecord(w http.ResponseWriter, r *http.Request) {
 	}))
 }
 
-// adminUpdateRecord processes an admin's POST to update any non-ID field in a
-// patient record.  Both admin-only fields and user-editable fields may be set.
+// adminUpdateRecord processes an admin's POST to update any non-ID field in a patient record.
+// both admin-only fields and user-editable fields may be set
 func adminUpdateRecord(w http.ResponseWriter, r *http.Request) {
 	session, user, err := getSession(r)
 	if err != nil || session == nil {
@@ -415,7 +409,7 @@ func adminUpdateRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// --- CSRF validation ---
+	// CSRF validation
 	if !requireCSRF(w, r, session) {
 		return
 	}
@@ -437,7 +431,7 @@ func adminUpdateRecord(w http.ResponseWriter, r *http.Request) {
 	gpName := strings.TrimSpace(r.FormValue("gp_name"))
 	notes := strings.TrimSpace(r.FormValue("notes"))
 
-	// --- Input validation ---
+	// input validation
 	var ve validationErrors
 	ve.check(nameRegex.MatchString(fullName), "Full name must be 1–100 letters, spaces, hyphens, or apostrophes.")
 	ve.check(dobRegex.MatchString(dob), "Date of birth must be in YYYY-MM-DD format.")
@@ -455,7 +449,7 @@ func adminUpdateRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prepared statement – SQL injection protection.
+	// prepared statement for SQL injection protection
 	_, err = db.Exec(`
 		UPDATE medical_records
 		SET    full_name = ?, date_of_birth = ?, blood_type = ?, allergies = ?,
@@ -474,13 +468,11 @@ func adminUpdateRecord(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redirectBase+"?flash="+url.QueryEscape("Record updated successfully."), http.StatusSeeOther)
 }
 
-// =============================================================================
-// ROUTER AND MAIN
-// =============================================================================
+// router and main
 
-// adminRecordRouter dispatches /admin/record/* paths.
-// Paths ending in the record ID only → view/edit form.
-// Paths ending in /update (POST) → update handler.
+// adminRecordRouter dispatches /admin/record/* paths
+// Paths ending in the record ID only → view/edit form
+// Paths ending in /update (POST) → update handler
 func adminRecordRouter(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/update") && r.Method == http.MethodPost {
 		adminUpdateRecord(w, r)
@@ -493,7 +485,7 @@ func main() {
 	initDB()
 	defer db.Close()
 
-	// html/template auto-escapes all output, defending against XSS.
+	// html/template auto-escapes all output, defending against XSS
 	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 
 	mux := http.NewServeMux()
@@ -505,7 +497,7 @@ func main() {
 	mux.HandleFunc("/admin/records", handleAdminRecords)
 	mux.HandleFunc("/admin/record/", adminRecordRouter) // prefix match
 
-	// Wrap the entire mux with the security-headers middleware (ADDITIONAL FEATURE 1).
+	// wrap the entire mux with the security-headers middleware (ADDITIONAL FEATURE 1)
 	handler := securityHeadersMiddleware(mux)
 
 	log.Println("SRMS – York City Medical Centre")
