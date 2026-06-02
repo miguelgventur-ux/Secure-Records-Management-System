@@ -82,6 +82,11 @@ srms/
 ├── models.go
 ├── session.go
 ├── validation.go
+└── Testing programs/
+    ├── setup_test.go
+    ├── validation_test.go
+    ├── middleware_test.go
+    ├── session_test.go
 ├── go.mod
 ├── go.sum
 ├── vendor/ # Vendored dependencies (golang.org/x/crypto, mattn/go-sqlite3)
@@ -90,9 +95,4 @@ srms/
     ├── record.html # Patient css
     ├── admin_records.html # Admin: list all records css
     └── admin_record.html # Admin: full record view and edit css
-└── Testing programs/
-    ├── setup_test.go
-    ├── validation_test.go
-    ├── middleware_test.go
-    ├── session_test.go
 ```
