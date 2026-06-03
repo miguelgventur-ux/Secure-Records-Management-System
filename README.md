@@ -100,8 +100,7 @@ srms/
 
 ## Ai Statement
 
-```
+
 In accordance with university guidance, the following tools were utilized for limited and specific purposes during this assignment:
 - **Claude**: Used for brainstorm potential system architecture ideas and generate initial templates for the documentation.
 - **Grammarly**: Used to proofread spelling, grammar, and punctuation across the documentation.
-```
